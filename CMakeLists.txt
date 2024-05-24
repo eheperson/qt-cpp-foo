@@ -1,0 +1,67 @@
+cmake_minimum_required(VERSION 3.16...3.29 FATAL_ERROR)
+
+project(
+  rppp
+  VERSION 1.0.0
+  DESCRIPTION "Rec-Play-Pause for large size projects"
+  LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# if(APPLE)
+#     enable_language(OBJC)
+# endif()
+
+set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
+
+set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../rpp-dev")
+set(SDL_DIR "${EXTERNAL_DIR}/SDL")
+
+# Adjust the path to SDL3 as needed
+list(APPEND CMAKE_PREFIX_PATH "${SDL_DIR}")
+find_package(SDL3 REQUIRED)
+
+configure_file(rpppConfig.h.in ${CMAKE_BINARY_DIR}/rpppConfig.h)
+
+add_executable(${PROJECT_NAME}
+	src/main.cpp
+  src/TestLib.h src/TestLib.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(${PROJECT_NAME}  SDL3::SDL3)
+
+install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION bin)
+install(FILES "${PROJECT_BINARY_DIR}/rpppConfig.h" DESTINATION include)
+
+set(CPACK_PACKAGE_VENDOR "eheperson")
+set(CPACK_SYSTEM_NAME "enivicivokki")
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_SOURCE_DIR}/out/package")
+
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES "/build/;/\\.git/;\\\\.DS_Store;\\\\.gitignore;\\\\.gitattributes")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My funky project")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_NAME_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_NAME_VERSION_MINOR}")
+
+include(CPack)
